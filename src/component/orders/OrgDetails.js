@@ -35,7 +35,7 @@ export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCop
             { gstin: gstin.number },
             {
               headers: {
-                'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjI2NzYzLCJuYW1lIjoiQVBJIFVzZXIiLCJjb21wYW55X2lkIjoxMTMwODc2LCJjb21wYW55X25hbWUiOiJDaXJjbyBMaWZlIEFQSSBUZXN0IiwiaWF0IjoxNzIzNTc0MzQwLCJ2ZXJzaW9uIjoyLCJwYXJ0bmVyIjp0cnVlfQ.kX1wTriKBzuINViIp7sVVx2daeAVMvFS0v4kGI0ShgQ`, // Replace with your actual token
+                'Authorization': ``, // Replace with your actual token
                 'Content-Type': 'application/json',
               },
             }
@@ -297,9 +297,9 @@ export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCop
                               }
                         />
                     </div>
-                    <div className="flex items-end w-full sm:w-1/2">
+                    <div className="flex items-end w-full sm:w-1/2 justify-end">
                         <button
-                            className="bg-primary text-white px-4 py-2 rounded w-full sm:w-auto"
+                            className="text-primary border border-primary bg-white px-4 py-2 rounded w-full sm:w-auto"
                             onClick={handleCopyToShipping}
                         >
                             Copy to Shipping Address

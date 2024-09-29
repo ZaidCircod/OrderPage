@@ -10,12 +10,12 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
     quantity: 1,
     subscription_plan: 1299,
     depositamount: 5000,
-    installetionCharge: 1500.00,
+    installetionCharge: 1800.00,
     extraCharge: 349,
     itemId: "mc_3y_1.0",
     totalSubscription: 1299,
     totalDeposit: 5000,
-    totalInstallation: 1500.00,
+    totalInstallation: 1800.00,
     fixedPriceAfter3Years: 799,
     totalAfter3Years: 799,
     discountamount:"",
@@ -31,11 +31,11 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
   const updatePricing = () => {
     let newSubscriptionPlan = 1299;
     let newDepositAmount = 5000;
-    let newInstallationCharge = 1500;
+    let newInstallationCharge = 1800;
     let newPriceAfter3Years = 0;
 
     if (acDetails.acType === "Split") {
-      newInstallationCharge = 1500;
+      newInstallationCharge = 1800;
       if (acDetails.ton === "10") { // 1 ton
         if (acDetails.plan === "3year") {
           newSubscriptionPlan = 1299;
@@ -81,7 +81,7 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
         newInstallationCharge=3500
       } else if (acDetails.ton === "30") { // 3 ton
         newSubscriptionPlan = 2999;
-        newDepositAmount = 15000;
+        newDepositAmount = 18000;
         newPriceAfter3Years = 1999;
         newInstallationCharge=3500
       }
@@ -164,12 +164,12 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
       quantity: 1,
       subscription_plan: 1299,
       depositamount: 5000,
-      installetionCharge: 1500.00,
+      installetionCharge: 1800.00,
       extraCharge: 349,
       itemId: "mc_3y_1.0",
       totalSubscription: 1299,
       totalDeposit: 5000,
-      totalInstallation: 1500.00,
+      totalInstallation: 1800.00,
       priceAfter3Years: 799,
       totalAfter3Years: 799,
       discountamount:0,
@@ -183,12 +183,12 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
       quantity: 1,
       subscription_plan: 1299,
       depositamount: 5000,
-      installetionCharge: 1500.00,
+      installetionCharge: 1800.00,
       extraCharge: 349,
       itemId: "mc_3y_1.0",
       totalSubscription: 1299,
       totalDeposit: 5000,
-      totalInstallation: 1500.00,
+      totalInstallation: 1800.00,
       priceAfter3Years: 799,
       totalAfter3Years: 799,
       discountamount:0,
