@@ -20,7 +20,7 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
     totalAfter3Years: 799,
     discountamount:"",
     discountpercent:"",
-    approavalcode:""
+    approvalcode:""
   });
 
 
@@ -174,7 +174,7 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
       totalAfter3Years: 799,
       discountamount:0,
       discountpercent:0,
-      approavalcode:""
+      approvalcode:""
     });
     onACDetailsChange({
       acType: "Split",
@@ -193,7 +193,7 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
       totalAfter3Years: 799,
       discountamount:0,
       discountpercent:0,
-      approavalcode:""
+      approvalcode:""
     });
   };
 
