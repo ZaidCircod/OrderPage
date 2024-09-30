@@ -4,6 +4,7 @@ import ACdetails from './ACdetails';
 import OrgDetails from './OrgDetails';
 import ShippingAddressFile from './ShippingAddressFile';
 import { useNavigate } from 'react-router-dom';
+import moment from 'moment'
 export default function OrderForm() {
   const navigate=useNavigate()
   const [customer, setCustomer] = useState([]);
@@ -38,23 +39,71 @@ export default function OrderForm() {
     state: '',
   });
   const [copiedShippingAddress, setCopiedShippingAddress] = useState(null);
+  const [gstin, setgstin] = useState({
+    name: '',
+    number: '',
+    billingName: '',
+    billingAddress: '',
+    phoneNumber: '' // Added phone number field
+});
 
+const custoemeriddefine = async () => {
+  const token = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjI2NzYzLCJuYW1lIjoiQVBJIFVzZXIiLCJjb21wYW55X2lkIjoxMTMwODc2LCJjb21wYW55X25hbWUiOiJDaXJjbyBMaWZlIEFQSSBUZXN0IiwiaWF0IjoxNzIzNTc0MzQwLCJ2ZXJzaW9uIjoyLCJwYXJ0bmVyIjp0cnVlfQ.kX1wTriKBzuINViIp7sVVx2daeAVMvFS0v4kGI0ShgQ`; // Bearer token from environment variable
+  const apiUrl = 'https://app.getswipe.in/api/partner/v1/customer/list'; // API endpoint
+
+  try {
+    // Make the API request with Axios
+    const response = await axios.get(apiUrl, {
+      headers: {
+        Authorization: `${token}`
+      }
+    });
+
+    // Extract data from the response
+    const data1 = response.data.total_records;
+    console.log('Data1:', data1); // Log the data for verification
+
+    // Return the data
+    return data1;
+
+  } catch (error) {
+    // Handle errors and return a default value or null if needed
+    if (error.response) {
+      console.error('Error response data:', error.response.data);
+      console.error('Error response status:', error.response.status);
+      console.error('Error response headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('Error request:', error.request);
+    } else {
+      console.error('Error message:', error.message);
+    }
+
+    // Return null or some default value in case of an error
+    return null;
+  }
+};
+const cleanName = (name) => {
+  if (!name) return ''; // Return empty string if name is falsy
+  // Remove special characters, keeping only alphanumeric and space
+  return name.replace(/[^a-zA-Z0-9]/g, '').trim();
+};
+const generateCustomerId = async () => {
+  const data1 = await custoemeriddefine(); // Retrieve the data from API
+
+  // Use '27' as the GST value
+  const gstCode = '27';
+  const currentDate = moment().format('DDMMYY');
+  const name = cleanName(gstin.name); // Replace with actual name or get it dynamically
+
+  // Replace with '00' and the value of data1
+  const nextCustomerNumber = data1 ? data1.toString().padStart(4, '0') : '0000'; // Ensure data1 is at least 4 digits
+  const newCustomerId = `CL${name.substring(0, 3).toUpperCase()}${currentDate}${gstCode}${nextCustomerNumber}`;
+
+  return newCustomerId;
+};
   const handleCopyToShipping = (billingData) => {
     console.log("Received billing data in OrderForm:", billingData);
     setCopiedShippingAddress(billingData);
-  };
-  useEffect(() => {
-    fetchOrganizationData();
-  }, []);
-
-  const fetchOrganizationData = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/customers/getall`);
-      const fetchedData = Array.isArray(response.data) ? response.data : [response.data];
-      setCustomer(fetchedData);
-    } catch (error) {
-      console.error("Error fetching organization data:", error);
-    }
   };
   const handleTransformedAddress = (address) => {
     setTransformedAddress(address);
@@ -82,10 +131,53 @@ export default function OrderForm() {
     setSelectedOrgData(null);
     setSelectedShippingAddress(null);
   };
-  const logDetails = () => {
-    console.log("Selected Organization Data:", selectedOrgData);
+  const logDetails = async () => {
+    const customerId = await generateCustomerId(gstin.name);
+    console.log(customerId,"lllcustomer")
+    console.log("Selected Organization Data:", gstin);
     console.log("Shipping Address:", selectedShippingAddress);
-    console.log("Customer Data:", CustomerData);
+    const data = {
+      name: gstin.name,
+      // cin: {
+      //   number: cin,
+      //   url: cinFileUrl,
+      // },
+      // pan: {
+      //   number: pan,
+      //   url: panFileUrl,
+      // },
+      customer_id:customerId,
+      userid:null,
+      superadminphone: gstin.phoneNumber,
+      gstin: {
+        number: gstin.number,
+        billingName: gstin.billingName,
+        billingAddress: gstin.billingAddress,
+    },
+      shipping_address: {
+        line1:selectedShippingAddress.line1,
+        line2:selectedShippingAddress.line2,
+        city:selectedShippingAddress.city,
+        state:selectedShippingAddress.state,
+        pincode:selectedShippingAddress.pincode
+      },
+      // superadminname:superadmin.username,
+      // email:superadmin.email,
+      // superadminphone:superadmin.phone
+    };
+    console.log(data,"llllfasd");
+    try {
+      let response
+      axios({
+        url:"http://35.154.99.308:3000/api/customer",
+        method:"POST",
+        data:data
+      }).then(res=>{
+        console.log(res.data)
+      })
+    } catch (error) {
+      console.log(error.message,"error in api")
+    }
   };
 
   return (
@@ -98,6 +190,8 @@ export default function OrderForm() {
         onClearSearch={handleClearSearch}
         onCopyToShipping={handleCopyToShipping}
         onTransformedAddress={handleTransformedAddress}
+        gstin={gstin}
+        setgstin={setgstin}
       />
       <ShippingAddressFile 
         selectedOrgId={selectedOrgId} 
@@ -129,6 +223,7 @@ export default function OrderForm() {
         {/*  */}
           Take Token
         </button>
+        <button className='bg-white text-primary py-2 px-4 border border-primary'>Request Site Visit</button>
       </div>
     </div>
   );

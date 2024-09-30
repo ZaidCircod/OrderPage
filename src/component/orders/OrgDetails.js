@@ -1,200 +1,88 @@
-import React, { useState, useEffect, useRef } from 'react';
-import axios from "axios"
+import React, { useState } from 'react';
+import axios from "axios";
 
-export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCopyToShipping,onTransformedAddress}) {
-    const [searchOrg, setSearchOrg] = useState('');
-    const [selectedOrg, setSelectedOrg] = useState(null);
-    const [gstin, setgstin] = useState({
-        number: '',
-        billingName: '',
-        billingAddress: '',
-        phoneNumber: '' // Added phone number field
-    });
-    const [filteredOrgs, setFilteredOrgs] = useState([]);
-    const [showOrgDropdown, setShowOrgDropdown] = useState(false);
-    const [showgstinDropdown, setShowgstinDropdown] = useState(false);
-    const inputRef = useRef(null);
-    const [copyshippingaddresstogst,setcopyshippingaddresstogst]=useState()
+export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransformedAddress }) {
+    
     const [shippingAddress, setShippingAddress] = useState({
         line1: '',
         line2: '',
         pincode: '',
         city: '',
         state: '',
-      });
-    
-      const handleFetchGST = async () => {
+    });
+
+    const [billingAddress, setBillingAddress] = useState({
+        line1: '',
+        line2: '',
+        pincode: '',
+        city: '',
+        state: '',
+    });
+
+    const handleFetchGST = async () => {
         if (!gstin.number) {
-          alert("Please enter a GSTIN number.");
-          return;
+            alert("Please enter a GSTIN number.");
+            return;
         }
-      
+
         try {
-          const response = await axios.post(
-            'https://app.getswipe.in/api/user/fetch_gst_details',
-            { gstin: gstin.number },
-            {
-              headers: {
-                'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjI2NzYzLCJuYW1lIjoiQVBJIFVzZXIiLCJjb21wYW55X2lkIjoxMTMwODc2LCJjb21wYW55X25hbWUiOiJDaXJjbyBMaWZlIEFQSSBUZXN0IiwiaWF0IjoxNzIzNTc0MzQwLCJ2ZXJzaW9uIjoyLCJwYXJ0bmVyIjp0cnVlfQ.kX1wTriKBzuINViIp7sVVx2daeAVMvFS0v4kGI0ShgQ`, // Replace with your actual token
-                'Content-Type': 'application/json',
-              },
-            }
-          );
-      
-          const billingData = response.data.response.billing;
-  
-          const transformedAddress = {
-            line1: billingData.address_1, // Rename address_1 to line1
-            line2: billingData.address_2, // Rename address_2 to line2
-            city: billingData.city,
-            pincode: billingData.pincode,
-            state: billingData.state
-          };
-        
-          // Set the transformed data into the state
-          setcopyshippingaddresstogst(transformedAddress);
-          onTransformedAddress(transformedAddress);
-        
-          // Log the transformed data directly
-          console.log("Transformed Shipping Address:", transformedAddress);
-          // Check if response contains the required billing details
-          if (response.data && response.data.response && response.data.response.billing) {
-            const billingData = response.data.response.billing;
-      
-            // Concatenate the address fields
-            const billingAddress = [
-              billingData.address_1 || "",
-              billingData.address_2 || "",
-              billingData.city || "",
-              billingData.state ? billingData.state.substring(3) : "", // Get state name without state code
-              billingData.pincode || ""
-            ]
-              .filter(Boolean)  // Removes any empty string values
-              .join(", ");       // Joins non-empty parts with commas
-      
-            // Update GSTIN state with the company name and billing address
-            setgstin((prevGstin) => ({
-              ...prevGstin,
-              billingName: response.data.response.company_name || "",
-              billingAddress: billingAddress,
-            }));
-          } else {
-            alert("Failed to fetch billing details. Please check the GSTIN number.");
-          }
-        } catch (error) {
-          console.error("Error fetching GST:", error);
-          alert("Failed to fetch GST details. Please try again.");
-        }
-      };
-    useEffect(() => {
-        if (searchOrg) {
-            const filtered = customer.filter(org =>
-                org.name.toLowerCase().includes(searchOrg.toLowerCase())
+            const response = await axios.post(
+                'https://app.getswipe.in/api/user/fetch_gst_details',
+                { gstin: gstin.number },
+                {
+                    headers: {
+                        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjI2NzYzLCJuYW1lIjoiQVBJIFVzZXIiLCJjb21wYW55X2lkIjoxMTMwODc2LCJjb21wYW55X25hbWUiOiJDaXJjbyBMaWZlIEFQSSBUZXN0IiwiaWF0IjoxNzIzNTc0MzQwLCJ2ZXJzaW9uIjoyLCJwYXJ0bmVyIjp0cnVlfQ.kX1wTriKBzuINViIp7sVVx2daeAVMvFS0v4kGI0ShgQ`, // Replace with your actual token 
+                        'Content-Type': 'application/json',
+                    },
+                }
             );
-            setFilteredOrgs(filtered);
-            setShowOrgDropdown(true);
-        } else {
-            clearAllFields();
+
+            const billingData = response.data.response.billing;
+            const transformedAddress = {
+                line1: billingData.address_1,
+                line2: billingData.address_2,
+                city: billingData.city,
+                pincode: billingData.pincode,
+                state: billingData.state
+            };
+
+            setShippingAddress(transformedAddress);
+            setBillingAddress(transformedAddress); // Set billingAddress state
+            onTransformedAddress(transformedAddress);
+
+            if (response.data && response.data.response && response.data.response.billing) {
+                setgstin((prevGstin) => ({
+                    ...prevGstin,
+                    billingName: response.data.response.company_name || "",
+                    billingAddress: transformedAddress, // Store directly in the object
+                }));
+            } else {
+                alert("Failed to fetch billing details. Please check the GSTIN number.");
+            }
+        } catch (error) {
+            console.error("Error fetching GST:", error);
+            alert("Failed to fetch GST details. Please try again.");
         }
-    }, [searchOrg, customer]);
-
-    useEffect(() => {
-        if (selectedOrg) {
-            onOrgSelect(selectedOrg.customer_id, {
-                name: selectedOrg.name,
-                ...gstin
-            });
-        }
-    }, [selectedOrg, gstin]);
-
-    const clearAllFields = () => {
-        setSelectedOrg(null);
-        setgstin({
-            number: '',
-            billingName: '',
-            billingAddress: '',
-            phoneNumber: '' // Clear phone number
-        });
-        setFilteredOrgs([]);
-        setShowOrgDropdown(false);
-        setShowgstinDropdown(false);
-        onClearSearch();
-    };
-
-    const handleSearchOrgChange = (e) => {
-        setSearchOrg(e.target.value);
-        setShowOrgDropdown(true);
-        if (!e.target.value) {
-            clearAllFields();
-        }
-    };
-
-    const handleOrgSelect = (org) => {
-        setSearchOrg(org.name);
-        setSelectedOrg(org);
-        setShowOrgDropdown(false);
-        setgstin({
-            number: '',
-            billingName: '',
-            billingAddress: '',
-            phoneNumber: '' // Reset phone number
-        });
-    };
-
-    console.log(gstin,"llgstin")
-
-    const handleSearchOrgFocus = () => {
-        if (searchOrg) {
-            setShowOrgDropdown(true);
-        }
-    };
-
-    const handleSearchOrgBlur = () => {
-        setTimeout(() => {
-            setShowOrgDropdown(false);
-        }, 200);
-    };
-
-    const handlegstinNumberClick = () => {
-        if (selectedOrg && selectedOrg.gstin) {
-            setShowgstinDropdown(!showgstinDropdown);
-        }
-    };
-
-    const handlegstinBlur = () => {
-        setTimeout(() => {
-            setShowgstinDropdown(false);
-        }, 200);
     };
 
     const handleCopyToShipping = () => {
-        // Check if there is a billing address
-        if (!gstin.billingAddress) {
+        if (!billingAddress.line1) {
             alert("Please enter the billing address.");
-            return; // Exit the function early if there's no billing address
+            return;
         }
-    
-        // Use the current gstin state to populate the shipping address
-        const billingAddressParts = gstin.billingAddress.split(", ");
-    
+
         const billingData = {
-            line1: billingAddressParts[0] || '',
-            line2: billingAddressParts[1] || '',
-            city: billingAddressParts[2] || '',
-            state: billingAddressParts[3] || '',
-            pincode: billingAddressParts[5] || '',
+            line1: billingAddress.line1,
+            line2: billingAddress.line2,
+            city: billingAddress.city,
+            pincode: billingAddress.pincode,
+            state: billingAddress.state,
         };
-    
-        // Log the billing data to check its content
-        console.log("Billing Data:", billingData);
-    
-        // Call the onCopyToShipping prop function with the billing data
+
         if (onCopyToShipping) {
             onCopyToShipping(billingData);
         }
     };
-    
-
 
     return (
         <div className="bg-white shadow-md rounded-xl border-2 p-6">
@@ -202,33 +90,22 @@ export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCop
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex flex-col w-full sm:w-[45%] relative">
-                        <label htmlFor="searchOrg" className="mb-2 font-medium">Enter Customer Name:</label>
+                        <label htmlFor="customerName" className="mb-2 font-medium">Customer Name:</label>
                         <input
-                            ref={inputRef}
-                            id="searchOrg"
+                            id="customerName"
                             className="border-2 border-gray-400 p-2 rounded"
                             placeholder="Enter Customer Name"
-                            value={searchOrg}
-                            onChange={handleSearchOrgChange}
-                            onFocus={handleSearchOrgFocus}
-                            onBlur={handleSearchOrgBlur}
+                            value={gstin.name}
+                            onChange={(e) =>
+                                setgstin((prevGstin) => ({
+                                    ...prevGstin,
+                                    name: e.target.value
+                                }))
+                            }
                         />
-                        {showOrgDropdown && filteredOrgs.length > 0 && (
-                            <ul className="absolute z-10 w-full bg-white border border-gray-300 mt-1 max-h-40 overflow-y-auto top-full left-0 shadow-md">
-                                {filteredOrgs.map((org) => (
-                                    <li
-                                        key={org._id}
-                                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                                        onMouseDown={() => handleOrgSelect(org)}
-                                    >
-                                        {org.name}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
                     </div>
                     <div className="flex flex-col w-full sm:w-[45%] ml-auto">
-                    <label htmlFor="phoneNumber" className="mb-2 font-medium">Phone Number:</label>
+                        <label htmlFor="phoneNumber" className="mb-2 font-medium">Phone Number:</label>
                         <input
                             id="phoneNumber"
                             className="border-2 border-gray-300 p-2 rounded"
@@ -236,17 +113,16 @@ export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCop
                             value={gstin.phoneNumber}
                             onChange={(e) =>
                                 setgstin((prevGstin) => ({
-                                  ...prevGstin,
-                                  phoneNumber: e.target.value
+                                    ...prevGstin,
+                                    phoneNumber: e.target.value
                                 }))
-                              }
+                            }
                         />
-                        
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex flex-col w-full sm:w-[45%] relative">
-                        <label htmlFor="gstinNumber" className="mb-2 font-medium">Gstin:</label>
+                        <label htmlFor="gstinNumber" className="mb-2 font-medium">GSTIN:</label>
                         <div className="flex mb-4 md:mb-0">
                             <input
                                 type="text"
@@ -273,7 +149,7 @@ export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCop
                         </div>
                     </div>
                     <div className="flex flex-col w-full sm:w-[45%] ml-auto">
-                    <label htmlFor="billingName" className="mb-2 font-medium">Billing Name:</label>
+                        <label htmlFor="billingName" className="mb-2 font-medium">Billing Name:</label>
                         <input
                             id="billingName"
                             className="border-2 border-gray-300 p-2 rounded"
@@ -281,28 +157,38 @@ export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCop
                             value={gstin.billingName}
                             onChange={(e) =>
                                 setgstin((prevGstin) => ({
-                                  ...prevGstin,
-                                  billingName: e.target.value
+                                    ...prevGstin,
+                                    billingName: e.target.value
                                 }))
-                              }
+                            }
                         />
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex flex-col w-full sm:w-1/2">
                     <label htmlFor="billingAddress" className="mb-2 font-medium">Billing Address:</label>
-                        <textarea
-                            id="billingAddress"
-                            className="border-2 border-gray-300 p-2 rounded h-24 resize-none"
-                            placeholder="Billing Address"
-                            value={gstin.billingAddress}
-                            onChange={(e) =>
-                                setgstin((prevGstin) => ({
-                                  ...prevGstin,
-                                  billingAddress: e.target.value
-                                }))
-                              }
-                        />
+    <textarea
+        id="billingAddress"
+        className="border-2 border-gray-300 p-2 rounded h-36 resize-none"
+        placeholder="Billing Address"
+        value={
+            `${billingAddress.line1 || ''}\n` +
+            `${billingAddress.line2 || ''}\n` +
+            `${billingAddress.city  || ''}\n` +
+            `${billingAddress.state  ||''}\n` +
+            `${billingAddress.pincode || ''}`
+        }
+        onChange={(e) => {
+            const lines = e.target.value.split('\n');
+            setBillingAddress({
+                line1: lines[0] || '',
+                line2: lines[1] || '',
+                city: lines[2]?.split(',')[0]?.trim() || '',
+                state: lines[2]?.split(',')[1]?.split('-')[0]?.trim() || '',
+                pincode: lines[2]?.split('-')[1]?.trim() || '',
+            });
+        }}
+    />
                     </div>
                     <div className="flex items-end w-full sm:w-1/2 justify-end">
                         <button

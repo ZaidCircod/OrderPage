@@ -18,10 +18,12 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
     totalInstallation: 1800.00,
     fixedPriceAfter3Years: 799,
     totalAfter3Years: 799,
-    discountamount:"",
-    discountpercent:"",
-    approvalcode:""
-  });
+    discountamount: "",
+    discountpercent: "",
+    approvalcode: "",
+    totalAmount: 8898 // Initialize totalAmount
+});
+
 
 
   useEffect(() => {
@@ -87,33 +89,43 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
       }
     }
 
-    const discountAmount = acDetails.discountamount ;
-    const discountPercent = acDetails.discountpercent ;
-  
+    const discountAmount = acDetails.discountamount || 0;
+    const discountPercent = acDetails.discountpercent || 0;
+
     const totalSubscriptionBeforeDiscount = newSubscriptionPlan * acDetails.quantity;
     const totalSubscription = totalSubscriptionBeforeDiscount - discountAmount - (totalSubscriptionBeforeDiscount * (discountPercent / 100));
     
     const totalDeposit = newDepositAmount * acDetails.quantity;
     const totalInstallation = newInstallationCharge * acDetails.quantity;
-  
+
+    // Calculate the total amount
+    let totalAmount = totalSubscription + totalDeposit + totalInstallation;
+
+    // Include totalAfter3Years if the plan is "3+2year"
+    if (acDetails.plan === "3+2year") {
+        totalAmount += newPriceAfter3Years * acDetails.quantity;
+    }
+
     const itemId = `mc_${acDetails.plan === "3year" ? "3" : acDetails.plan === "5years" ? "5" : "3+2"}y_${acDetails.ton.replace(' ', '_')}`;
 
     const updatedDetails = {
-      ...acDetails,
-      subscription_plan: newSubscriptionPlan,
-      depositamount: newDepositAmount,
-      installetionCharge: newInstallationCharge,
-      itemId: itemId,
-      totalSubscription: totalSubscription,
-      totalDeposit: totalDeposit,
-      totalInstallation: totalInstallation,
-      fixedPriceAfter3Years: newPriceAfter3Years,
-      totalAfter3Years: newPriceAfter3Years * acDetails.quantity,
+        ...acDetails,
+        subscription_plan: newSubscriptionPlan,
+        depositamount: newDepositAmount,
+        installetionCharge: newInstallationCharge,
+        itemId: itemId,
+        totalSubscription: totalSubscription,
+        totalDeposit: totalDeposit,
+        totalInstallation: totalInstallation,
+        fixedPriceAfter3Years: newPriceAfter3Years,
+        totalAfter3Years: newPriceAfter3Years * acDetails.quantity,
+        totalAmount: totalAmount, // Add the totalAmount field here
     };
-  
+
     setACDetails(updatedDetails);
     onACDetailsChange(updatedDetails);
-  };
+};
+
   
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -245,7 +257,8 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
             <p>Total After 3 Years: {item.totalAfter3Years}</p>
           </>
         )}
-        <p>Approval Code: {item.approavalcode}</p>
+        <p>Total Amount:{item.totalAmount}</p>
+        <p>Approval Code: {item.approvalcode}</p>
         <button
           onClick={() => handleRemove(item.id)}
           className="mt-4 bg-red-500 text-white font-normal py-2 px-4 rounded"
@@ -316,29 +329,29 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
               <label htmlFor="totalDeposit" className="block font-semibold mb-2">Total Deposit:</label>
               <input type="number" id="totalDeposit" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalDeposit}  onChange={handleChange} />
             </div>
+            <div>
+              <label htmlFor="totalAmount" className="block font-semibold mb-2">Total Amount:</label>
+              <input type="number" id="totalAmount" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalAmount}  onChange={handleChange} />
+            </div>
 
             {acDetails.plan === "3+2year" && (
               <>
                 <div>
-                  <label htmlFor="priceAfter3Years" className="block font-semibold mb-2">Price after 3 years per unit:</label>
-                  <input type="number" id="priceAfter3Years" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.fixedPriceAfter3Years}  onChange={handleChange} readOnly/>
-                </div>
-                <div>
-                  <label htmlFor="totalAfter3Years" className="block font-semibold mb-2">Total after 3 years:</label>
-                  <input type="number" id="totalAfter3Years" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalAfter3Years} onChange={handleChange} readOnly />
+                  <label htmlFor="priceAfter3Years" className="block font-semibold mb-2">Total price 3 years per unit:</label>
+                  <input type="number" id="priceAfter3Years" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalAfter3Years}  onChange={handleChange} readOnly/>
                 </div>
               </>
             )}
             <div>
-  <label htmlFor="approvalcode" className="block font-semibold mb-2">Approval Code</label>
-  <input 
-    type="text" 
-    id="approvalcode" 
-    className="w-full border-2 border-gray-300 rounded py-2 px-4" 
-    value={acDetails.approvalcode}  // fixed typo
-    onChange={handleChange} 
-  />
-</div>
+              <label htmlFor="approvalcode" className="block font-semibold mb-2">Approval Code</label>
+              <input 
+                type="text" 
+                id="approvalcode" 
+                className="w-full border-2 border-gray-300 rounded py-2 px-4" 
+                value={acDetails.approvalcode}  // fixed typo
+                onChange={handleChange} 
+              />
+          </div>
           </div>
           <div>
             <button
