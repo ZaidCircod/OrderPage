@@ -35,7 +35,7 @@ export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCop
             { gstin: gstin.number },
             {
               headers: {
-                'Authorization': ``, // Replace with your actual token
+                'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjI2NzYzLCJuYW1lIjoiQVBJIFVzZXIiLCJjb21wYW55X2lkIjoxMTMwODc2LCJjb21wYW55X25hbWUiOiJDaXJjbyBMaWZlIEFQSSBUZXN0IiwiaWF0IjoxNzIzNTc0MzQwLCJ2ZXJzaW9uIjoyLCJwYXJ0bmVyIjp0cnVlfQ.kX1wTriKBzuINViIp7sVVx2daeAVMvFS0v4kGI0ShgQ`, // Replace with your actual token
                 'Content-Type': 'application/json',
               },
             }
@@ -141,7 +141,7 @@ export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCop
         });
     };
 
-
+    console.log(gstin,"llgstin")
 
     const handleSearchOrgFocus = () => {
         if (searchOrg) {
@@ -168,15 +168,21 @@ export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCop
     };
 
     const handleCopyToShipping = () => {
+        // Check if there is a billing address
+        if (!gstin.billingAddress) {
+            alert("Please enter the billing address.");
+            return; // Exit the function early if there's no billing address
+        }
+    
         // Use the current gstin state to populate the shipping address
         const billingAddressParts = gstin.billingAddress.split(", ");
     
         const billingData = {
-          line1: billingAddressParts[0] || '',
-          line2: billingAddressParts[1] || '',
-          city: billingAddressParts[2] || '',
-          state: billingAddressParts[3] || '',
-          pincode: billingAddressParts[5] || '',
+            line1: billingAddressParts[0] || '',
+            line2: billingAddressParts[1] || '',
+            city: billingAddressParts[2] || '',
+            state: billingAddressParts[3] || '',
+            pincode: billingAddressParts[5] || '',
         };
     
         // Log the billing data to check its content
@@ -184,9 +190,10 @@ export default function OrgDetails({ customer, onOrgSelect, onClearSearch, onCop
     
         // Call the onCopyToShipping prop function with the billing data
         if (onCopyToShipping) {
-          onCopyToShipping(billingData);
+            onCopyToShipping(billingData);
         }
-      };
+    };
+    
 
 
     return (

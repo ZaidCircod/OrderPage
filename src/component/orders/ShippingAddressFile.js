@@ -14,6 +14,13 @@ export default function ShippingAddressFile({ selectedOrgId, onSelectAddress, on
   });
   const [errors, setErrors] = useState({});
 
+  const handleDeleteAddress = (index) => {
+    setShippingAddresses(prevAddresses => prevAddresses.filter((_, i) => i !== index));
+    if (selectedAddressIndex === index) {
+      setSelectedAddressIndex(null);
+      onSelectAddress(null);
+    }
+  };
   useEffect(() => {
     if (selectedOrgId) {
       console.log("Selected Org ID in ShippingAddressFile:", selectedOrgId);
@@ -180,7 +187,10 @@ export default function ShippingAddressFile({ selectedOrgId, onSelectAddress, on
                   {address.line1}, {address.line2}, {address.city}, {address.state} - {address.pincode}
                 </p>
               </div>
+              <div className=''>
+              <button className='ml-4 p-3 text-red-600' onClick={() => handleDeleteAddress(index)} >Delete</button>
             </div>
+          </div>
           ))
         ) : (
           <p className="text-gray-500 italic mb-4">No shipping addresses added yet.</p>

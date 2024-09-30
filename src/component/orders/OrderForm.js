@@ -4,7 +4,6 @@ import ACdetails from './ACdetails';
 import OrgDetails from './OrgDetails';
 import ShippingAddressFile from './ShippingAddressFile';
 import { useNavigate } from 'react-router-dom';
-import loadingGif from '../../assets/white gif.gif'; 
 export default function OrderForm() {
   const navigate=useNavigate()
   const [customer, setCustomer] = useState([]);
@@ -83,6 +82,11 @@ export default function OrderForm() {
     setSelectedOrgData(null);
     setSelectedShippingAddress(null);
   };
+  const logDetails = () => {
+    console.log("Selected Organization Data:", selectedOrgData);
+    console.log("Shipping Address:", selectedShippingAddress);
+    console.log("Customer Data:", CustomerData);
+  };
 
   return (
     <div className='space-y-6 p-6 bg-secondary min-h-screen justify-start block'>
@@ -106,7 +110,7 @@ export default function OrderForm() {
       />
       <div className="space-x-4">
       <button 
-        // onClick={handleSubmit} 
+        onClick={logDetails} 
         // disabled={isLoading}
         className="px-4 py-2 bg-primary text-white rounded disabled:bg-gray-400"
       >
