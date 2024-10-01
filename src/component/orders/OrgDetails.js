@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from "axios";
 
 export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransformedAddress }) {
-    
+
     const [shippingAddress, setShippingAddress] = useState({
         line1: '',
         line2: '',
@@ -18,7 +18,6 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
         city: '',
         state: '',
     });
-
     const handleFetchGST = async () => {
         if (!gstin.number) {
             alert("Please enter a GSTIN number.");
@@ -31,7 +30,7 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
                 { gstin: gstin.number },
                 {
                     headers: {
-                        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjI2NzYzLCJuYW1lIjoiQVBJIFVzZXIiLCJjb21wYW55X2lkIjoxMTMwODc2LCJjb21wYW55X25hbWUiOiJDaXJjbyBMaWZlIEFQSSBUZXN0IiwiaWF0IjoxNzIzNTc0MzQwLCJ2ZXJzaW9uIjoyLCJwYXJ0bmVyIjp0cnVlfQ.kX1wTriKBzuINViIp7sVVx2daeAVMvFS0v4kGI0ShgQ`, // Replace with your actual token 
+                        'Authorization': `${process.env.REACT_APP_SWIPE_TOKEN}`, // Replace with your actual token 
                         'Content-Type': 'application/json',
                     },
                 }
@@ -43,7 +42,7 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
                 line2: billingData.address_2,
                 city: billingData.city,
                 pincode: billingData.pincode,
-                state: billingData.state
+                state: billingData.state.slice(3).toUpperCase()
             };
 
             setShippingAddress(transformedAddress);
@@ -111,14 +110,19 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
                             className="border-2 border-gray-300 p-2 rounded"
                             placeholder="Phone Number"
                             value={gstin.phoneNumber}
-                            onChange={(e) =>
-                                setgstin((prevGstin) => ({
-                                    ...prevGstin,
-                                    phoneNumber: e.target.value
-                                }))
-                            }
+                            onChange={(e) => {
+                                const input = e.target.value;
+                                // Allow only digits and limit the length to 10 characters
+                                if (/^\d{0,10}$/.test(input)) {
+                                    setgstin((prevGstin) => ({
+                                        ...prevGstin,
+                                        phoneNumber: input
+                                    }));
+                                }
+                            }}
                         />
                     </div>
+
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex flex-col w-full sm:w-[45%] relative">
@@ -166,29 +170,29 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex flex-col w-full sm:w-1/2">
-                    <label htmlFor="billingAddress" className="mb-2 font-medium">Billing Address:</label>
-    <textarea
-        id="billingAddress"
-        className="border-2 border-gray-300 p-2 rounded h-36 resize-none"
-        placeholder="Billing Address"
-        value={
-            `${billingAddress.line1 || ''}\n` +
-            `${billingAddress.line2 || ''}\n` +
-            `${billingAddress.city  || ''}\n` +
-            `${billingAddress.state  ||''}\n` +
-            `${billingAddress.pincode || ''}`
-        }
-        onChange={(e) => {
-            const lines = e.target.value.split('\n');
-            setBillingAddress({
-                line1: lines[0] || '',
-                line2: lines[1] || '',
-                city: lines[2]?.split(',')[0]?.trim() || '',
-                state: lines[2]?.split(',')[1]?.split('-')[0]?.trim() || '',
-                pincode: lines[2]?.split('-')[1]?.trim() || '',
-            });
-        }}
-    />
+                        <label htmlFor="billingAddress" className="mb-2 font-medium">Billing Address:</label>
+                        <textarea
+                            id="billingAddress"
+                            className="border-2 border-gray-300 p-2 rounded h-36 resize-none"
+                            placeholder="Billing Address"
+                            value={
+                                `${billingAddress.line1 || ''}\n` +
+                                `${billingAddress.line2 || ''}\n` +
+                                `${billingAddress.city || ''}\n` +
+                                `${billingAddress.state || ''}\n` +
+                                `${billingAddress.pincode || ''}`
+                            }
+                            onChange={(e) => {
+                                const lines = e.target.value.split('\n');
+                                setBillingAddress({
+                                    line1: lines[0] || '',
+                                    line2: lines[1] || '',
+                                    city: lines[2]?.split(',')[0]?.trim() || '',
+                                    state: lines[2]?.split(',')[1]?.split('-')[0]?.trim() || '',
+                                    pincode: lines[2]?.split('-')[1]?.trim() || '',
+                                });
+                            }}
+                        />
                     </div>
                     <div className="flex items-end w-full sm:w-1/2 justify-end">
                         <button

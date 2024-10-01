@@ -119,7 +119,7 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
         totalInstallation: totalInstallation,
         fixedPriceAfter3Years: newPriceAfter3Years,
         totalAfter3Years: newPriceAfter3Years * acDetails.quantity,
-        totalAmount: totalAmount, // Add the totalAmount field here
+        totalAmount: totalAmount, 
     };
 
     setACDetails(updatedDetails);
@@ -207,6 +207,7 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
       discountpercent:0,
       approvalcode:""
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleRemove = (id) => {
@@ -280,7 +281,7 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <div>
               <label htmlFor="acType" className="block font-semibold mb-2">AC type:</label>
-              <select id="acType" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.acType} onChange={handleChange}>
+              <select id="acType" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.acType} onChange={handleChange} >
                 <option value="Split">Split</option>
                 <option value="Cassette">Cassette</option>
               </select>
@@ -307,19 +308,19 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
             </div>
             <div>
               <label htmlFor="subscription_plan" className="block font-semibold mb-2">Subscription Plan (Per Unit):</label>
-              <input type="number" id="subscription_plan" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.subscription_plan} onChange={handleChange}  />
+              <input type="number" id="subscription_plan" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.subscription_plan} onChange={handleChange} readOnly />
             </div>
             <div>
               <label htmlFor="installetionCharge" className="block font-semibold mb-2">Installation Fees (Per Unit):</label>
-              <input type="number" id="installetionCharge" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.installetionCharge} onChange={handleChange}  />
+              <input type="number" id="installetionCharge" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.installetionCharge} onChange={handleChange} readOnly  />
             </div>
             <div>
               <label htmlFor="depositamount" className="block font-semibold mb-2">Deposit Refundable (Per Unit):</label>
-              <input type="number" id="depositamount" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.depositamount} onChange={handleChange}  />
+              <input type="number" id="depositamount" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.depositamount} onChange={handleChange} readOnly  />
             </div>
             <div>
               <label htmlFor="totalSubscription" className="block font-semibold mb-2">Total Subscription:</label>
-              <input type="number" id="totalSubscription" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalSubscription} onChange={handleChange}  />
+              <input type="number" id="totalSubscription" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalSubscription} onChange={handleChange} readOnly/>
             </div>
             <div>
               <label htmlFor="totalInstallation" className="block font-semibold mb-2">Total Installation:</label>
@@ -327,11 +328,11 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
             </div>
             <div>
               <label htmlFor="totalDeposit" className="block font-semibold mb-2">Total Deposit:</label>
-              <input type="number" id="totalDeposit" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalDeposit}  onChange={handleChange} />
+              <input type="number" id="totalDeposit" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalDeposit}  onChange={handleChange} readOnly />
             </div>
             <div>
               <label htmlFor="totalAmount" className="block font-semibold mb-2">Total Amount:</label>
-              <input type="number" id="totalAmount" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalAmount}  onChange={handleChange} />
+              <input type="number" id="totalAmount" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalAmount}  onChange={handleChange} readOnly/>
             </div>
 
             {acDetails.plan === "3+2year" && (

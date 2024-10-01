@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ShippingAddressPopup from './popupfoldier/ShippingAddressPopup.js';
 
-export default function ShippingAddressFile({ selectedOrgId, onSelectAddress, onCustomerData, transformedAddress,copiedShippingAddress}) {
+export default function ShippingAddressFile({shippingaddressorder,setShippingAddressorder, selectedOrgId, onSelectAddress, onCustomerData, transformedAddress,copiedShippingAddress}) {
   const [shippingAddresses, setShippingAddresses] = useState([]);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -54,6 +54,10 @@ export default function ShippingAddressFile({ selectedOrgId, onSelectAddress, on
       onSelectAddress(shippingAddresses[index]);
     }
   };
+  useEffect(()=>{
+    setShippingAddressorder(shippingAddresses)
+  })
+  
 
   const handleAddShippingAddress = () => {
     setShippingAddress('');
@@ -67,6 +71,7 @@ export default function ShippingAddressFile({ selectedOrgId, onSelectAddress, on
       setShippingAddresses(prevAddresses => [...prevAddresses, { ...transformedAddress, id: Date.now() }]);
     }
   }, [transformedAddress]);
+  console.log(shippingAddresses,"Shipping Address")
   const handleClosePopup = () => {
     setIsPopupOpen(false);
     setShippingAddress({
