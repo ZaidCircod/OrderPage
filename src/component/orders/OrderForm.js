@@ -158,51 +158,59 @@ const generateCustomerId = async () => {
     }
   }, [CustomerIds]);
   const backendcustomercreation = async () => {
-    
     console.log("Selected Organization Data:", gstin);
     console.log("Shipping Address:", selectedShippingAddress);
-    const data = {
-      name: gstin.name,
-      customer_id:CustomerIds,
-      userid:null,
-      superadminphone: gstin.phoneNumber,
-      superadminname:gstin.name,
-      gstin: {
-        number: gstin.number,
-        billingName: gstin.billingName,
-        billingAddress: gstin.billingAddress,
-    },
-    shipping_address: shippingaddressorder
-      // superadminname:superadmin.username,
-      // email:superadmin.email,
-      // superadminphone:superadmin.phone
-    };
-    console.log(data,"llllfasd");
-    try {
-      let response = await axios({
-        url: `${process.env.REACT_APP_BASE_URL}/api/customer/save`,
-        method: "POST",
-        data: data,
-      });
-      console.log(response.data);
-    } catch (error) {
-      console.log(error.message, "error in api");
-    }
-    const formattedData = formatDataForSecondAPI(data);
-    console.log(formattedData);
-     const secondApiResponse = await axios.post(
-          `https://app.getswipe.in/api/partner/v1/customer`,
-          formattedData,
-          {
-            headers: {
-             'Authorization': `${process.env.REACT_APP_SWIPE_TOKEN}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log("Response from Swipe API:", secondApiResponse.data);
 
-  };
+    const data = {
+        name: gstin.name,
+        customer_id: CustomerIds,
+        userid: null,
+        superadminphone: gstin.phoneNumber,
+        superadminname: gstin.name,
+        gstin: {
+            number: gstin.number,
+            billingName: gstin.billingName,
+            billingAddress: gstin.billingAddress,
+        },
+        shipping_address: shippingaddressorder
+    };
+
+    console.log(data, "Formatted Data");
+
+    try {
+        // First API call to save customer data
+        const response = await axios({
+            url: `${process.env.REACT_APP_BASE_URL}/api/customer/save`,
+            method: "POST",
+            data: data,
+        });
+        console.log("Response from first API:", response.data);
+
+        // Proceed to the second API call if the first one is successful
+        try {
+            const formattedData = formatDataForSecondAPI(data);
+            console.log("Formatted Data for second API:", formattedData);
+
+            const secondApiResponse = await axios.post(
+                `https://app.getswipe.in/api/partner/v1/customer`,
+                formattedData,
+                {
+                    headers: {
+                        'Authorization': `${process.env.REACT_APP_SWIPE_TOKEN}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            console.log("Response from Swipe API:", secondApiResponse.data);
+        } catch (secondApiError) {
+            console.error("Error in Swipe API call:", secondApiError.message);
+        }
+    } catch (firstApiError) {
+        console.error("Error in first API call:", firstApiError.message);
+    }
+};
+
   // const TakeFullPaymemt=async()=>{
   //   logDetails()
   //   const invoiceResponse = await createInvoice();
