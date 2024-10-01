@@ -16,7 +16,7 @@ function Login() {
     setError('');
     try {
       const response = await axios.post(
-        `http://35.154.99.208:3000/api/user/login`,
+        `${process.env.REACT_APP_BASE_URL}/api/user/login`,
         {
           email: email,
           password: password
