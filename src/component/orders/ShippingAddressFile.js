@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ShippingAddressPopup from './popupfoldier/ShippingAddressPopup.js';
 
-export default function ShippingAddressFile({shippingaddressorder,setShippingAddressorder, selectedOrgId, onSelectAddress, onCustomerData, transformedAddress,copiedShippingAddress}) {
+export default function ShippingAddressFile({ shippingaddressorder, setShippingAddressorder, selectedOrgId, onSelectAddress, onCustomerData, transformedAddress, copiedShippingAddress }) {
   const [shippingAddresses, setShippingAddresses] = useState([]);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -13,6 +13,7 @@ export default function ShippingAddressFile({shippingaddressorder,setShippingAdd
     state: '',
   });
   const [errors, setErrors] = useState({});
+  const [siteSurveyRequest, setSiteSurveyRequest] = useState('online');
 
   const handleDeleteAddress = (index) => {
     setShippingAddresses(prevAddresses => prevAddresses.filter((_, i) => i !== index));
@@ -38,7 +39,7 @@ export default function ShippingAddressFile({shippingaddressorder,setShippingAdd
         ...copiedShippingAddress
       };
       setShippingAddresses(prevAddresses => [...prevAddresses, newAddress]);
-      
+
       // Optionally, select the new address
       setSelectedAddressIndex(shippingAddresses.length);
       onSelectAddress(newAddress);
@@ -54,10 +55,10 @@ export default function ShippingAddressFile({shippingaddressorder,setShippingAdd
       onSelectAddress(shippingAddresses[index]);
     }
   };
-  useEffect(()=>{
+  useEffect(() => {
     setShippingAddressorder(shippingAddresses)
   })
-  
+
 
   const handleAddShippingAddress = () => {
     setShippingAddress('');
@@ -71,7 +72,7 @@ export default function ShippingAddressFile({shippingaddressorder,setShippingAdd
       setShippingAddresses(prevAddresses => [...prevAddresses, { ...transformedAddress, id: Date.now() }]);
     }
   }, [transformedAddress]);
-  console.log(shippingAddresses,"Shipping Address")
+  console.log(shippingAddresses, "Shipping Address")
   const handleClosePopup = () => {
     setIsPopupOpen(false);
     setShippingAddress({
@@ -116,6 +117,7 @@ export default function ShippingAddressFile({shippingaddressorder,setShippingAdd
     setShippingAddresses(prevAddresses => [...prevAddresses, newAddress]);
     handleClosePopup();
   };
+  const handleChange = () => { }
 
   const STATES = [
     "Andhra Pradesh",
@@ -160,6 +162,11 @@ export default function ShippingAddressFile({shippingaddressorder,setShippingAdd
   //   // Update your shipping address state or component with the billing data
   //   setShippingAddress(billingData);
   // };
+  const handleSiteSurveyChange = (e) => {
+    const { value } = e.target;
+    setSiteSurveyRequest(value); // Update the state based on user selection
+  };
+
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -193,9 +200,9 @@ export default function ShippingAddressFile({shippingaddressorder,setShippingAdd
                 </p>
               </div>
               <div className=''>
-              <button className='ml-4 p-3 text-red-600' onClick={() => handleDeleteAddress(index)} >Delete</button>
+                <button className='ml-4 p-3 text-red-600' onClick={() => handleDeleteAddress(index)} >Delete</button>
+              </div>
             </div>
-          </div>
           ))
         ) : (
           <p className="text-gray-500 italic mb-4">No shipping addresses added yet.</p>
@@ -218,6 +225,52 @@ export default function ShippingAddressFile({shippingaddressorder,setShippingAdd
           errors={errors}
           STATES={STATES}
         />
+        <div>
+  <label className="block font-semibold mb-2 mt-6">Type of Site Survey:</label>
+  <div className="flex flex-col mb-4">
+    <div className="flex items-center mb-2">
+      <input
+        type="radio"
+        id="online"
+        name="siteSurveyRequest"
+        value="online"
+        className="hidden" // Hide the original radio button
+        checked={siteSurveyRequest === 'online'}
+        onChange={handleSiteSurveyChange}
+      />
+      <label
+        htmlFor="online"
+        className={`flex items-center cursor-pointer relative mr-2 gap-2`}
+      >
+        <span className={`h-5 w-5 border-2 border-gray-300 rounded-full flex items-center justify-center ${siteSurveyRequest === 'online' ? 'bg-primary' : 'bg-white'}`}>
+          {siteSurveyRequest === 'online' && <span className="h-3 w-3 rounded-full bg-white"></span>} {/* Inner circle for checked state */}
+        </span>
+        Online
+      </label>
+    </div>
+    
+    <div className="flex items-center mb-2">
+      <input
+        type="radio"
+        id="offline"
+        name="siteSurveyRequest"
+        value="offline"
+        className="hidden mr-3" // Hide the original radio button
+        checked={siteSurveyRequest === 'offline'}
+        onChange={handleSiteSurveyChange}
+      />
+      <label
+        htmlFor="offline"
+        className={`flex items-center cursor-pointer relative mr-2 gap-2`}
+      >
+        <span className={`h-5 w-5 border-2 border-gray-300 rounded-full flex items-center justify-center ${siteSurveyRequest === 'offline' ? 'bg-primary' : 'bg-white'}`}>
+          {siteSurveyRequest === 'offline' && <span className="h-3 w-3 rounded-full bg-white"></span>} {/* Inner circle for checked state */}
+        </span>
+        Offline
+      </label>
+    </div>
+  </div>
+        </div>
       </div>
     </div>
   );

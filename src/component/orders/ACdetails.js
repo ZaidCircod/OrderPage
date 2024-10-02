@@ -83,7 +83,7 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
         newInstallationCharge=3500
       } else if (acDetails.ton === "30") { // 3 ton
         newSubscriptionPlan = 2999;
-        newDepositAmount = 18000;
+        newDepositAmount = 15000;
         newPriceAfter3Years = 1999;
         newInstallationCharge=3500
       }
@@ -127,36 +127,53 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
 };
 
   
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    let newValue = value;
-  
-    switch (id) {
-      case "quantity":
-        newValue = parseInt(value) || 1;
-        break;
-        case "discountamount":
-          case "discountpercent":
-            newValue = value === '' ? null : parseFloat(value);
-            break;
-      case "acType":
-        newValue = value;
-        setACDetails(prevDetails => ({
-          ...prevDetails,
-          [id]: newValue,
-          ton: value === "Split" ? "10" : "20",
-          plan: value === "Cassette" ? "3+2year" : "3year"
-        }));
-        return;
-      default:
-        break;
-    }
-  
+const handleChange = (e) => {
+  const { id, value } = e.target;
+  let newValue = value;
+
+  switch (id) {
+    case "quantity":
+      // Allow the input to be empty, or only valid numbers
+      if (newValue === '' || /^[0-9\b]+$/.test(newValue)) { // Check for valid number or blank
+        newValue = newValue === '' ? null : parseInt(newValue);
+      }
+      break;
+
+    case "discountamount":
+    case "discountpercent":
+      newValue = value === '' ? null : parseFloat(value);
+      break;
+
+    case "acType":
+      newValue = value;
+      setACDetails(prevDetails => ({
+        ...prevDetails,
+        [id]: newValue,
+        ton: value === "Split" ? "10" : "20",
+        plan: value === "Cassette" ? "3+2year" : "3year"
+      }));
+      return; // Directly return here to avoid setting the state again later
+
+    default:
+      break;
+  }
+
+  setACDetails(prevDetails => ({
+    ...prevDetails,
+    [id]: newValue,
+  }));
+};
+
+const handleBlur = () => {
+  // Ensure the quantity is at least 1 on blur
+  if (acDetails.quantity === null || acDetails.quantity <= 0) {
     setACDetails(prevDetails => ({
       ...prevDetails,
-      [id]: newValue,
+      quantity: 1, // Set to 1 if empty or less than 1
     }));
-  };
+  }
+};
+
   
     
   const handleFocus = (e) => {
@@ -207,7 +224,7 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
       discountpercent:0,
       approvalcode:""
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0,0);
   };
 
   const handleRemove = (id) => {
@@ -304,7 +321,14 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
             </div>
             <div>
               <label htmlFor="quantity" className="block font-semibold mb-2">Quantity:</label>
-              <input type="number" id="quantity" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.quantity} onChange={handleChange} min="1" />
+              <input
+                id="quantity"
+                type="text" // Allow full editability
+                className="w-full border-2 border-gray-300 rounded py-2 px-4"
+                value={acDetails.quantity === null ? '' : acDetails.quantity} // Display blank if null
+                onChange={handleChange}
+                onBlur={handleBlur} // Validate when losing focus
+            />
             </div>
             <div>
               <label htmlFor="subscription_plan" className="block font-semibold mb-2">Subscription Plan (Per Unit):</label>
