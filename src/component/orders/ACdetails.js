@@ -102,9 +102,9 @@ export default function ACdetails({ onACDetailsChange, savedItems, setSavedItems
     let totalAmount = totalSubscription + totalDeposit + totalInstallation;
 
     // Include totalAfter3Years if the plan is "3+2year"
-    if (acDetails.plan === "3+2year") {
-        totalAmount += newPriceAfter3Years * acDetails.quantity;
-    }
+    // if (acDetails.plan === "3+2year") {
+    //     totalAmount += newPriceAfter3Years * acDetails.quantity;
+    // }
 
     const itemId = `mc_${acDetails.plan === "3year" ? "3" : acDetails.plan === "5years" ? "5" : "3+2"}y_${acDetails.ton.replace(' ', '_')}`;
 
@@ -200,6 +200,7 @@ const handleBlur = () => {
       totalDeposit: 5000,
       totalInstallation: 1800.00,
       priceAfter3Years: 799,
+      fixedPriceAfter3Years:799,
       totalAfter3Years: 799,
       discountamount:0,
       discountpercent:0,
@@ -267,11 +268,11 @@ const handleBlur = () => {
         <p>Plan: {item.plan}</p>
         <p>Quantity: {item.quantity}</p>
         <p>Total Installation: {item.totalInstallation}</p>
-        <p>Subscription Plan: {item.totalSubscription}</p>
-        <p>Deposit Amount: {item.totalDeposit}</p>
+        <p>Subscription for M1 to M36: {item.totalSubscription}</p>
+        <p>Refundable Deposit: {item.totalDeposit}</p>
         {item.plan === "3+2year" && (
           <>
-            <p>Price After 3 Years per Unit: {item.totalAfter3Years/item.quantity}</p>
+            <p>Subscription for M37 to M60 : {item.totalAfter3Years/item.quantity}</p>
             <p>Total After 3 Years: {item.totalAfter3Years}</p>
           </>
         )}
@@ -331,52 +332,70 @@ const handleBlur = () => {
             />
             </div>
             <div>
-              <label htmlFor="subscription_plan" className="block font-semibold mb-2">Subscription Plan (Per Unit):</label>
+              <label htmlFor="subscription_plan" className="block font-semibold mb-2">Subscription for M1 to M36 (Per Unit):</label>
               <input type="number" id="subscription_plan" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.subscription_plan} onChange={handleChange} readOnly />
             </div>
             <div>
-              <label htmlFor="installetionCharge" className="block font-semibold mb-2">Installation Fees (Per Unit):</label>
+              <label htmlFor="installetionCharge" className="block font-semibold mb-2">Installation Charges (Per Unit):</label>
               <input type="number" id="installetionCharge" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.installetionCharge} onChange={handleChange} readOnly  />
             </div>
             <div>
-              <label htmlFor="depositamount" className="block font-semibold mb-2">Deposit Refundable (Per Unit):</label>
+              <label htmlFor="depositamount" className="block font-semibold mb-2">Refundable Deposit (Per Unit):</label>
               <input type="number" id="depositamount" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.depositamount} onChange={handleChange} readOnly  />
             </div>
+            
             <div>
-              <label htmlFor="totalSubscription" className="block font-semibold mb-2">Total Subscription:</label>
+              <label htmlFor="totalSubscription" className="block font-semibold mb-2">Monthly Subscription from M1 to M36:</label>
               <input type="number" id="totalSubscription" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalSubscription} onChange={handleChange} readOnly/>
             </div>
+            {/* price per unti */}
+            {acDetails.plan === "3+2year" && (
+              <>
+              <div>
+                  <label htmlFor="priceAfter3Years" className="block font-semibold mb-2">Subscription for M37 to M60 (Per unit):</label>
+                  <input type="number" id="priceAfter3Years" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.fixedPriceAfter3Years}  onChange={handleChange} readOnly/>
+                </div>
+                
+              </>
+            )}
             <div>
-              <label htmlFor="totalInstallation" className="block font-semibold mb-2">Total Installation:</label>
+              <label htmlFor="totalInstallation" className="block font-semibold mb-2">Total Installation Charges:</label>
               <input type="number" id="totalInstallation" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalInstallation} onChange={handleChange} readOnly/>
             </div>
             <div>
-              <label htmlFor="totalDeposit" className="block font-semibold mb-2">Total Deposit:</label>
+              <label htmlFor="totalDeposit" className="block font-semibold mb-2">Total Refundable Deposit:</label>
               <input type="number" id="totalDeposit" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalDeposit}  onChange={handleChange} readOnly />
             </div>
-            <div>
-              <label htmlFor="totalAmount" className="block font-semibold mb-2">Total Amount:</label>
-              <input type="number" id="totalAmount" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalAmount}  onChange={handleChange} readOnly/>
-            </div>
-
             {acDetails.plan === "3+2year" && (
               <>
+              
                 <div>
-                  <label htmlFor="priceAfter3Years" className="block font-semibold mb-2">Total price 3 years per unit:</label>
+                  <label htmlFor="priceAfter3Years" className="block font-semibold mb-2">Monthly Subscription for M37 to M60:</label>
                   <input type="number" id="priceAfter3Years" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalAfter3Years}  onChange={handleChange} readOnly/>
                 </div>
               </>
             )}
-            <div>
-              <label htmlFor="approvalcode" className="block font-semibold mb-2">Approval Code</label>
-              <input 
-                type="text" 
-                id="approvalcode" 
-                className="w-full border-2 border-gray-300 rounded py-2 px-4" 
-                value={acDetails.approvalcode}  // fixed typo
-                onChange={handleChange} 
-              />
-          </div>
+            <div className="relative">
+    <label htmlFor="approvalcode" className="block font-semibold mb-2">Approval Code</label>
+    <input 
+        type="text" 
+        id="approvalcode" 
+        className="w-full border-2 border-gray-300 rounded py-2 px-4 pr-16" // Add padding to the right for the button
+        value={acDetails.approvalcode} 
+        onChange={handleChange} 
+    />
+    <button 
+        className="absolute right-2 top-1/2  bg-primary text-white rounded py-1 px-4 " 
+         // Button click handler
+    >
+        Apply
+    </button>
+</div>
+
+          <div>
+              <label htmlFor="totalAmount" className="block font-semibold mb-2">Total Amount to be paid now:</label>
+              <input type="number" id="totalAmount" className="w-full border-2 border-gray-300 rounded py-2 px-4" value={acDetails.totalAmount}  onChange={handleChange} readOnly/>
+            </div>
           </div>
           <div>
             <button

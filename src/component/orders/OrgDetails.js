@@ -85,7 +85,19 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
 
     return (
         <div className="bg-white shadow-md rounded-xl border-2 p-6">
-            <h1 className="font-semibold text-lg mb-4">Order Details</h1>
+            <div className='flex justify-between items-center mb-4'>
+    <h1 className="font-medium text-lg">Order Details</h1>
+    <div className="flex items-center">
+        <input
+            type="checkbox"
+            id="existingCustomer"
+            className="mr-2" // Adds some margin to the right of the checkbox
+            // You can add a state management here if needed
+        />
+        <label htmlFor="existingCustomer" className="font-semibold">Existing Customer</label>
+    </div>
+</div>
+
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex flex-col w-full sm:w-[45%] relative">

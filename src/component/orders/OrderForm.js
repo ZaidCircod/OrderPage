@@ -251,7 +251,7 @@ const generateCustomerId = async () => {
         description: "Circolife AC ",
         amount: Price,
         name: gstin.name,
-        contact: "9892215848"
+        contact: gstin.phoneNumber
       };
     
       try {
