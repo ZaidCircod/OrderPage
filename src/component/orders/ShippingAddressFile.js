@@ -13,30 +13,6 @@ export default function ShippingAddressFile({ shippingaddressorder, setShippingA
     state: '',
   });
   const [errors, setErrors] = useState({});
-  const [siteSurveyRequest, setSiteSurveyRequest] = useState('online');
-  const [siteSurveyDate, setSiteSurveyDate] = useState('');
-  const [installationDate, setInstallationDate] = useState('');
-  const [businessType, setBusinessType] = useState('');
-  const [Source,setSource]=useState('');
-
-    const handleSourceChange=(event)=>{
-      setSource(event.target.value);
-    }
-
-    const handleBusinessTypeChange = (event) => {
-        setBusinessType(event.target.value);
-    };
-
-
-
-  const handleSiteSurveyDateChange = (event) => {
-      setSiteSurveyDate(event.target.value);
-  };
-
-  const handleInstallationDateChange = (event) => {
-      setInstallationDate(event.target.value);
-  };
-
 
   const handleDeleteAddress = (index) => {
     setShippingAddresses(prevAddresses => prevAddresses.filter((_, i) => i !== index));
@@ -140,7 +116,7 @@ export default function ShippingAddressFile({ shippingaddressorder, setShippingA
     setShippingAddresses(prevAddresses => [...prevAddresses, newAddress]);
     handleClosePopup();
   };
-  const handleChange = () => { }
+  
 
   const STATES = [
     "Andhra Pradesh",
@@ -185,11 +161,6 @@ export default function ShippingAddressFile({ shippingaddressorder, setShippingA
   //   // Update your shipping address state or component with the billing data
   //   setShippingAddress(billingData);
   // };
-  const handleSiteSurveyChange = (e) => {
-    const { value } = e.target;
-    setSiteSurveyRequest(value); // Update the state based on user selection
-  };
-
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -248,118 +219,7 @@ export default function ShippingAddressFile({ shippingaddressorder, setShippingA
           errors={errors}
           STATES={STATES}
         />
-        <div>
-  <label className="block font-semibold mb-2 mt-6">Type of Site Survey:</label>
-  <div className="flex flex-col mb-4">
-    <div className="flex items-center mb-2">
-      <input
-        type="radio"
-        id="online"
-        name="siteSurveyRequest"
-        value="online"
-        className="hidden" // Hide the original radio button
-        checked={siteSurveyRequest === 'online'}
-        onChange={handleSiteSurveyChange}
-      />
-      <label
-        htmlFor="online"
-        className={`flex items-center cursor-pointer relative mr-2 gap-2`}
-      >
-        <span className={`h-5 w-5 border-2 border-gray-300 rounded-full flex items-center justify-center ${siteSurveyRequest === 'online' ? 'bg-primary' : 'bg-white'}`}>
-          {siteSurveyRequest === 'online' && <span className="h-3 w-3 rounded-full bg-white"></span>} {/* Inner circle for checked state */}
-        </span>
-        Online
-      </label>
-    </div>
-    
-    <div className="flex flex-col items-start mb-2"> {/* Set flex-col for vertical layout */}
-  <input
-    type="radio"
-    id="offline"
-    name="siteSurveyRequest"
-    value="offline"
-    className="hidden mr-3" // Hide the original radio button
-    checked={siteSurveyRequest === 'offline'}
-    onChange={handleSiteSurveyChange}
-  />
-  <label
-    htmlFor="offline"
-    className={`flex items-center cursor-pointer relative mr-2 gap-2`}
-  >
-    <span className={`h-5 w-5 border-2 border-gray-300 rounded-full flex items-center justify-center ${siteSurveyRequest === 'offline' ? 'bg-primary' : 'bg-white'}`}>
-      {siteSurveyRequest === 'offline' && <span className="h-3 w-3 rounded-full bg-white"></span>} {/* Inner circle for checked state */}
-    </span>
-    Offline
-  </label>
-
-  {/* Site Survey Date Field */}
-  <div className="mb-4 mt-6">
-    <label htmlFor="siteSurveyDate" className="block font-semibold mb-2">Site Survey Date</label>
-    <input
-      type="date"
-      id="siteSurveyDate"
-      className="w-full border-2 border-gray-300 rounded py-2 px-4"
-      value={siteSurveyDate} // Replace with your state variable
-      onChange={handleSiteSurveyDateChange} // Define this function
-    />
-  </div>
-
-  {/* Installation Date Field */}
-  <div className="mb-4">
-    <label htmlFor="installationDate" className="block font-semibold mb-2">Installation Date</label>
-    <input
-      type="date"
-      id="installationDate"
-      className="w-full border-2 border-gray-300 rounded py-2 px-4"
-      value={installationDate} // Replace with your state variable
-      onChange={handleInstallationDateChange} // Define this function
-    />
-  </div>
-  <div className="mb-4">
-            <label htmlFor="businessType" className="block font-semibold mb-2">Type of Business</label>
-            <select
-                id="businessType"
-                value={businessType}
-                onChange={handleBusinessTypeChange}
-                className="w-full border-2 border-gray-300 rounded py-2 px-4"
-            >
-                <option value="" disabled>Select a type</option>
-                <option value="office_space">Office Space</option>
-                <option value="pg_co_living_hostel">PG/Co-living/Hostel</option>
-                <option value="clinic">Clinic</option>
-                <option value="gym">Gym</option>
-                <option value="Factory">Factory</option>
-                <option value="Pharmacies">Pharamacies</option>
-                <option value="cafe/Restro Bar">Cafe/Restro Bar</option>
-                <option value="spa">Spa</option>
-                <option value="coaching_center">Coaching_Center</option>
-                <option value="school">School</option>
-                <option value="salon">Saloon</option>
-                <option value="retail_supermarket">Retail Supermarket</option>
-                <option value="Independent_Shop">Independent Shop</option>
-                <option value="hotel">Hotel</option>
-                <option value="landury">Landury</option>
-                <option value="College">College</option>
-            </select>
-        </div>
-        <div className="mb-4">
-            <label htmlFor="Source" className="block font-semibold mb-2">Source of Lead</label>
-            <select
-                id="Source"
-                value={Source}
-                onChange={handleSourceChange}
-                className="w-full border-2 border-gray-300 rounded py-2 px-4"
-            >
-                <option value="" disabled>Select a type</option>
-                <option value="office_space">Cold Visit</option>
-                <option value="Employee Referral">Employee Referral</option>
-                <option value="Customer Referral">Customer Referral</option>
-            </select>
-        </div>
-</div>
-
-  </div>
-        </div>
+        
       </div>
     </div>
   );

@@ -289,7 +289,7 @@ const handleBlur = () => {
   </div>
 )}
       {!modalACDetails && (
-        <button className="mt-6 border border-primary py-2 px-4 text-primary rounded-lg" onClick={() => setModalACDetails(true)}>
+        <button className="mt-6 border border-primary py-2 px-4 text-primary rounded-lg hover:text-white hover:bg-primary" onClick={() => setModalACDetails(true)}>
           + Add an AC
         </button>
       )}

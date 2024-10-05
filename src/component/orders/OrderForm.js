@@ -5,6 +5,7 @@ import OrgDetails from './OrgDetails';
 import ShippingAddressFile from './ShippingAddressFile';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment'
+import SitesSurvery from './SitesSurvery';
 export default function OrderForm() {
   const navigate=useNavigate()
   const [customer, setCustomer] = useState([]);
@@ -51,7 +52,42 @@ export default function OrderForm() {
     phoneNumber: '' // Added phone number field
 });
 const [overallTotalAmount, setOverallTotalAmount] = useState(0);
+const [showPaymentPopup, setShowPaymentPopup] = useState(false);
+    const [paymentAmount, setPaymentAmount] = useState('');
 
+    const handleProceedToPayment=async()=>{
+      const data = {
+        description: "Circolife AC ",
+        amount: paymentAmount,
+        name: gstin.name,
+        contact: gstin.phoneNumber
+      };
+    
+      try {
+        const response = await axios.post(`${process.env.REACT_APP_RAZORPAY}/create-payment-link`, data, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('Payment Link Created:', response.data);
+        return response.data; 
+        
+      } catch (error) {
+        console.error('Error creating payment link:', error);
+        throw error;
+      }
+    }
+    const handlePaymentAmountChange = (e) => {
+      const amount = parseFloat(e.target.value);
+      if (isNaN(amount)) {
+          setPaymentAmount('');
+      } else if (amount > overallTotalAmount) {
+          alert(`The payment amount cannot exceed the overall amount of ${overallTotalAmount}`);
+          setPaymentAmount('');
+      } else {
+          setPaymentAmount(amount);
+      }
+  };
 const custoemeriddefine = async () => {
   const token = `${process.env.REACT_APP_SWIPE_TOKEN}`
   const apiUrl = 'https://app.getswipe.in/api/partner/v1/customer/list'; // API endpoint
@@ -210,6 +246,7 @@ const generateCustomerId = async () => {
         console.error("Error in first API call:", firstApiError.message);
     }
 };
+
 
   // const TakeFullPaymemt=async()=>{
   //   logDetails()
@@ -735,7 +772,9 @@ useEffect(() => {
   updateOverallTotal();
 }, [savedItems]);
 
-
+const handleCustomizePayment=()=>{
+  setShowPaymentPopup(true)
+}
   return (
     <div className='space-y-6 p-6 bg-secondary min-h-screen justify-start block'>
       <h1 className="text-2xl font-bold">Order Details</h1>
@@ -760,6 +799,7 @@ useEffect(() => {
         setShippingAddressorder={setShippingAddressorder}
         shippingaddressorder={shippingaddressorder}
       />
+      <SitesSurvery/>
       <div className="space-x-4">
       <button 
         onClick={TakeFullPaymemt} 
@@ -781,8 +821,37 @@ useEffect(() => {
         {/*  */}
           Take Token
         </button>
+        <button className='bg-white text-primary py-2 px-4 border border-primary'  onClick={handleCustomizePayment}>Customize Payment</button>
         <button className='bg-white text-primary py-2 px-4 border border-primary'>Request Site Visit</button>
       </div>
+      {showPaymentPopup && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                        <h2 className="text-xl font-bold mb-4">Customize Payment</h2>
+                        <input
+                            type="number"
+                            value={paymentAmount}
+                            onChange={handlePaymentAmountChange}
+                            className="border-2 border-gray-300 p-2 rounded mb-4 w-full"
+                            placeholder="Enter amount"
+                        />
+                        <div className="flex justify-between gap-4">
+                            <button 
+                                className="bg-primary text-white px-4 py-2 rounded"
+                                onClick={handleProceedToPayment}
+                            >
+                                Proceed to Pay
+                            </button>
+                            <button 
+                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                                onClick={() => setShowPaymentPopup(false)}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
     </div>
   );
 }

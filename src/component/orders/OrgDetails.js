@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import axios from "axios";
 
 export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransformedAddress }) {
-
     const [shippingAddress, setShippingAddress] = useState({
         line1: '',
         line2: '',
@@ -18,6 +17,7 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
         city: '',
         state: '',
     });
+
     const handleFetchGST = async () => {
         if (!gstin.number) {
             alert("Please enter a GSTIN number.");
@@ -30,7 +30,7 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
                 { gstin: gstin.number },
                 {
                     headers: {
-                        'Authorization': `${process.env.REACT_APP_SWIPE_TOKEN}`, // Replace with your actual token 
+                        'Authorization': `${process.env.REACT_APP_SWIPE_TOKEN}`,
                         'Content-Type': 'application/json',
                     },
                 }
@@ -46,14 +46,14 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
             };
 
             setShippingAddress(transformedAddress);
-            setBillingAddress(transformedAddress); // Set billingAddress state
+            setBillingAddress(transformedAddress);
             onTransformedAddress(transformedAddress);
 
             if (response.data && response.data.response && response.data.response.billing) {
                 setgstin((prevGstin) => ({
                     ...prevGstin,
                     billingName: response.data.response.company_name || "",
-                    billingAddress: transformedAddress, // Store directly in the object
+                    billingAddress: transformedAddress,
                 }));
             } else {
                 alert("Failed to fetch billing details. Please check the GSTIN number.");
@@ -86,17 +86,16 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
     return (
         <div className="bg-white shadow-md rounded-xl border-2 p-6">
             <div className='flex justify-between items-center mb-4'>
-    <h1 className="font-medium text-lg">Order Details</h1>
-    <div className="flex items-center">
-        <input
-            type="checkbox"
-            id="existingCustomer"
-            className="mr-2" // Adds some margin to the right of the checkbox
-            // You can add a state management here if needed
-        />
-        <label htmlFor="existingCustomer" className="font-semibold">Existing Customer</label>
-    </div>
-</div>
+                <h1 className="font-medium text-lg">Order Details</h1>
+                <div className="flex items-center">
+                    <input
+                        type="checkbox"
+                        id="existingCustomer"
+                        className="mr-2"
+                    />
+                    <label htmlFor="existingCustomer" className="font-semibold">Existing Customer</label>
+                </div>
+            </div>
 
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -116,30 +115,26 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
                         />
                     </div>
                     <div className="flex flex-col w-full sm:w-[45%] ml-auto">
-                        <label htmlFor="phoneNumber" className="mb-2 font-medium">Phone Number:</label>
+                        <label htmlFor="email" className="mb-2 font-medium">Email(Optional):</label>
                         <input
-                            id="phoneNumber"
+                            id="email"
+                            type="email"
                             className="border-2 border-gray-300 p-2 rounded"
-                            placeholder="Phone Number"
-                            value={gstin.phoneNumber}
-                            onChange={(e) => {
-                                const input = e.target.value;
-                                // Allow only digits and limit the length to 10 characters
-                                if (/^\d{0,10}$/.test(input)) {
-                                    setgstin((prevGstin) => ({
-                                        ...prevGstin,
-                                        phoneNumber: input
-                                    }));
-                                }
-                            }}
+                            placeholder="Email Address"
+                            value={gstin.email || ''}
+                            onChange={(e) =>
+                                setgstin((prevGstin) => ({
+                                    ...prevGstin,
+                                    email: e.target.value
+                                }))
+                            }
                         />
                     </div>
-
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex flex-col w-full sm:w-[45%] relative">
                         <label htmlFor="gstinNumber" className="mb-2 font-medium">GSTIN:</label>
-                        <div className="flex mb-4 md:mb-0">
+                        <div className="flex">
                             <input
                                 type="text"
                                 value={gstin.number}
@@ -153,11 +148,11 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
                                         }));
                                     }
                                 }}
-                                className="flex-grow p-2 border rounded-l w-28 mb-2"
+                                className="flex-grow p-2 border rounded-l w-28"
                                 placeholder="Enter the GSTIN number"
                             />
                             <button
-                                className="bg-primary text-white px-4 rounded-r mb-2"
+                                className="bg-primary text-white px-4 rounded-r"
                                 onClick={handleFetchGST}
                             >
                                 Fetch Details
@@ -165,6 +160,26 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
                         </div>
                     </div>
                     <div className="flex flex-col w-full sm:w-[45%] ml-auto">
+                        <label htmlFor="phoneNumber" className="mb-2 font-medium">Phone Number:</label>
+                        <input
+                            id="phoneNumber"
+                            className="border-2 border-gray-300 p-2 rounded"
+                            placeholder="Phone Number"
+                            value={gstin.phoneNumber}
+                            onChange={(e) => {
+                                const input = e.target.value;
+                                if (/^\d{0,10}$/.test(input)) {
+                                    setgstin((prevGstin) => ({
+                                        ...prevGstin,
+                                        phoneNumber: input
+                                    }));
+                                }
+                            }}
+                        />
+                    </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex flex-col w-full sm:w-[45%]">
                         <label htmlFor="billingName" className="mb-2 font-medium">Billing Name:</label>
                         <input
                             id="billingName"
@@ -179,13 +194,11 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
                             }
                         />
                     </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex flex-col w-full sm:w-1/2">
+                    <div className="flex flex-col w-full sm:w-[45%] ml-auto">
                         <label htmlFor="billingAddress" className="mb-2 font-medium">Billing Address:</label>
                         <textarea
                             id="billingAddress"
-                            className="border-2 border-gray-300 p-2 rounded h-36 resize-none"
+                            className="border-2 border-gray-300 p-2 rounded h-24 resize-none"
                             placeholder="Billing Address"
                             value={
                                 `${billingAddress.line1 || ''}\n` +
@@ -206,14 +219,14 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
                             }}
                         />
                     </div>
-                    <div className="flex items-end w-full sm:w-1/2 justify-end">
-                        <button
-                            className="text-primary border border-primary bg-white px-4 py-2 rounded w-full sm:w-auto"
-                            onClick={handleCopyToShipping}
-                        >
-                            Copy to Shipping Address
-                        </button>
-                    </div>
+                </div>
+                <div className="flex justify-end mt-4">
+                    <button
+                        className="text-primary border border-primary bg-white px-4 py-2 rounded"
+                        onClick={handleCopyToShipping}
+                    >
+                        Copy to Shipping Address
+                    </button>
                 </div>
             </div>
         </div>
