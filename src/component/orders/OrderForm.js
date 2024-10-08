@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import axios from 'axios';
 import ACdetails from './ACdetails';
 import OrgDetails from './OrgDetails';
@@ -51,9 +51,77 @@ export default function OrderForm() {
     billingAddress: '',
     phoneNumber: '' // Added phone number field
 });
+const [billingAddress, setBillingAddress] = useState({
+  line1: '',
+  line2: '',
+  pincode: '',
+  city: '',
+  state: '',
+});
+
 const [overallTotalAmount, setOverallTotalAmount] = useState(0);
 const [showPaymentPopup, setShowPaymentPopup] = useState(false);
-    const [paymentAmount, setPaymentAmount] = useState('');
+const [isFullPaymentModal,setisFullPaymentModal]=useState(false)
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [selectedOption, setSelectedOption] = useState('generate');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const handleFullPaymentModal = () => setisFullPaymentModal(true);
+  const handleFullPaymentModalClose = () =>{ 
+    setisFullPaymentModal(false)
+    setSelectedFile(null)
+  };
+  const [isChecked, SetisChecked] = useState(false);
+
+
+  const fileInputRef = useRef(null);
+
+  const handleOptionChange = (value) => {
+    setSelectedOption(value);
+  };
+
+  const handleFileSelect = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      alert('Please select a file first');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const response = await fetch('YOUR_UPLOAD_API_ENDPOINT', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert('File uploaded successfully');
+        handleFullPaymentModalClose();
+      } else {
+        throw new Error('File upload failed');
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload file. Please try again.');
+    }
+  };
+
+  const handleSubmit = () => {
+    if (selectedOption === 'upload') {
+      handleUpload();
+    } else {
+      RazorpayFulllPayment()
+    }
+  };
 
     const handleProceedToPayment=async()=>{
       const data = {
@@ -190,7 +258,6 @@ const generateCustomerId = async () => {
   useEffect(() => {
     if (CustomerIds) {
       console.log("CustomerID updated:", CustomerIds);
-      // You can call other functions that depend on customerIds here
     }
   }, [CustomerIds]);
   const backendcustomercreation = async () => {
@@ -221,7 +288,7 @@ const generateCustomerId = async () => {
             data: data,
         });
         console.log("Response from first API:", response.data);
-
+        
         // Proceed to the second API call if the first one is successful
         try {
             const formattedData = formatDataForSecondAPI(data);
@@ -247,21 +314,6 @@ const generateCustomerId = async () => {
     }
 };
 
-
-  // const TakeFullPaymemt=async()=>{
-  //   logDetails()
-  //   const invoiceResponse = await createInvoice();
-  //   console.log("Invoice created successfully:", invoiceResponse.data);
-  //   // const subscriptionResponse = await createSubscription(invoiceResponse.data);
-  //   // console.log("Subscription created successfully:", subscriptionResponse);
-  //   // try {
-  //   //   //   First, send the order data to your backend
-  //   //   const orderResults = await processAllOrders(savedItems);
-  //   //   console.log("All orders processed:", orderResults);
-  //   // }catch(error){
-  //   //   console.log(error,"Error occured while hitting the api in our backend")
-  //   // }
-  // }
   const RazorpayFulllPayment=async()=>{
       const data = {
         description: "Circolife AC ",
@@ -787,6 +839,10 @@ const handleCustomizePayment=()=>{
         onTransformedAddress={handleTransformedAddress}
         gstin={gstin}
         setgstin={setgstin}
+        isChecked={isChecked}
+        SetisChecked={SetisChecked}
+        billingAddress={billingAddress}
+        setBillingAddress={setBillingAddress}
       />
       <ShippingAddressFile 
         selectedOrgId={selectedOrgId} 
@@ -802,9 +858,8 @@ const handleCustomizePayment=()=>{
       <SitesSurvery/>
       <div className="space-x-4">
       <button 
-        onClick={TakeFullPaymemt} 
-        // disabled={isLoading}
-        className="px-4 py-2 bg-primary text-white rounded disabled:bg-gray-400"
+        onClick={handleFullPaymentModal}
+        className="text-white bg-primary py-2 px-4 border border-primary"
       >
         Take Full Payment
       </button>
@@ -821,6 +876,79 @@ const handleCustomizePayment=()=>{
         {/*  */}
           Take Token
         </button>
+        {isFullPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-96">
+            <h2 className="text-xl font-bold mb-4">Payment Options</h2>
+            <p className="mb-4">Please select a payment option:</p>
+            
+            <div className="space-y-2 mb-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  value="generate"
+                  checked={selectedOption === 'generate'}
+                  onChange={() => handleOptionChange('generate')}
+                  className="form-radio text-primary"
+                />
+                <span>Generate Link</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  value="upload"
+                  checked={selectedOption === 'upload'}
+                  onChange={() => handleOptionChange('upload')}
+                  className="form-radio text-primary"
+                />
+                <span>Upload Proof of Payment</span>
+              </label>
+            </div>
+            
+            {selectedOption === 'upload' && (
+              <div className="mb-4">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept="image/*,application/pdf"
+                />
+                <div className='flex'>
+                <button 
+                  onClick={handleFileSelect}
+                  className="p-2 border border-gray-300 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </button>
+                {selectedFile && (
+                  <p className="mt-2 ml-3 text-sm text-primary">
+                    {selectedFile.name}
+                  </p>
+                )}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-2">
+              <button 
+                onClick={handleFullPaymentModalClose}
+                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSubmit}
+                className="bg-white text-primary py-2 px-4 border border-primary"
+              >
+                Proceed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
         <button className='bg-white text-primary py-2 px-4 border border-primary'  onClick={handleCustomizePayment}>Customize Payment</button>
         <button className='bg-white text-primary py-2 px-4 border border-primary'>Request Site Visit</button>
       </div>
@@ -829,11 +957,11 @@ const handleCustomizePayment=()=>{
                     <div className="bg-white p-6 rounded-lg shadow-lg">
                         <h2 className="text-xl font-bold mb-4">Customize Payment</h2>
                         <input
-                            type="number"
-                            value={paymentAmount}
-                            onChange={handlePaymentAmountChange}
-                            className="border-2 border-gray-300 p-2 rounded mb-4 w-full"
-                            placeholder="Enter amount"
+                          type="number"
+                          value={paymentAmount}
+                          onChange={handlePaymentAmountChange}
+                          className="border-2 border-gray-300 p-2 rounded mb-4 w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          placeholder="Enter amount"
                         />
                         <div className="flex justify-between gap-4">
                             <button 

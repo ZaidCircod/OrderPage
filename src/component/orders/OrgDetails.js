@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from "axios";
 
-export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransformedAddress }) {
+export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransformedAddress,isChecked,SetisChecked }) {
     const [shippingAddress, setShippingAddress] = useState({
         line1: '',
         line2: '',
@@ -18,6 +18,36 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
         state: '',
     });
 
+
+    const handleCheckboxChange = (e) => {
+        SetisChecked(e.target.checked);
+        if (e.target.checked) {
+            console.log("Checkbox selected");
+            setShippingAddress({
+                line1: '',
+                line2: '',
+                pincode: '',
+                city: '',
+                state: '',
+            });
+            setgstin({
+                name: '',
+                number: '',
+                billingName: '',
+                billingAddress: '',
+                phoneNumber: '' 
+            });
+            setBillingAddress({
+                line1: '',
+                line2: '',
+                pincode: '',
+                city: '',
+                state: '',
+            });
+        } else {
+            console.log("Checkbox unselected");
+        }
+    };
     const handleFetchGST = async () => {
         if (!gstin.number) {
             alert("Please enter a GSTIN number.");
@@ -82,19 +112,22 @@ export default function OrgDetails({ gstin, setgstin, onCopyToShipping, onTransf
             onCopyToShipping(billingData);
         }
     };
+    console.log(isChecked,"checkbox status")
 
     return (
         <div className="bg-white shadow-md rounded-xl border-2 p-6">
             <div className='flex justify-between items-center mb-4'>
                 <h1 className="font-medium text-lg">Order Details</h1>
                 <div className="flex items-center">
-                    <input
-                        type="checkbox"
-                        id="existingCustomer"
-                        className="mr-2"
-                    />
-                    <label htmlFor="existingCustomer" className="font-semibold">Existing Customer</label>
-                </div>
+            <input
+                type="checkbox"
+                id="existingCustomer"
+                className="mr-2"
+                checked={isChecked}
+                onChange={handleCheckboxChange}
+            />
+            <label htmlFor="existingCustomer" className="font-semibold">Existing Customer</label>
+        </div>
             </div>
 
             <div className="flex flex-col gap-4">
