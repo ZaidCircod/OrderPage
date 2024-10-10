@@ -71,6 +71,11 @@ const [isFullPaymentModal,setisFullPaymentModal]=useState(false)
     setSelectedFile(null)
   };
   const [isChecked, SetisChecked] = useState(false);
+  const [orderData, setOrderData] = useState({
+    // ... other order fields
+    siteSurvey: {}
+});
+
 
 
   const fileInputRef = useRef(null);
@@ -137,7 +142,8 @@ const [isFullPaymentModal,setisFullPaymentModal]=useState(false)
             'Content-Type': 'application/json'
           }
         });
-        console.log('Payment Link Created:', response.data);
+        handleFullPaymentModalClose()
+        alert('Payment Link Send Sucessfully:', response.data);
         return response.data; 
         
       } catch (error) {
@@ -241,6 +247,18 @@ const generateCustomerId = async () => {
     setSelectedShippingAddress(null);
   };
 
+  useEffect(() => {
+    fetchOrganizationData();
+  }, []);
+  const fetchOrganizationData = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/customers/getall`);
+      const fetchedData = Array.isArray(response.data) ? response.data : [response.data];
+      setCustomer(fetchedData);
+    } catch (error) {
+      console.error("Error fetching organization data:", error);
+    }
+  };
   const handleCustomerIdGeneration = async () => {
     try {
       const generatedCustomerId = await generateCustomerId(gstin.name);
@@ -275,7 +293,7 @@ const generateCustomerId = async () => {
             billingName: gstin.billingName,
             billingAddress: gstin.billingAddress,
         },
-        shipping_address: shippingaddressorder
+        shipping_address: shippingaddressorder,
     };
 
     console.log(data, "Formatted Data");
@@ -283,7 +301,8 @@ const generateCustomerId = async () => {
     try {
         // First API call to save customer data
         const response = await axios({
-            url: `${process.env.REACT_APP_BASE_URL}/api/customer/save`,
+            // url: `${process.env.REACT_APP_BASE_URL}/api/customer/save`,
+            url:"http://localhost:8080/api/sales/web",
             method: "POST",
             data: data,
         });
@@ -328,7 +347,8 @@ const generateCustomerId = async () => {
             'Content-Type': 'application/json'
           }
         });
-        console.log('Payment Link Created:', response.data);
+        alert('Payment Link Send Sucessfully:', response.data);
+        handleFullPaymentModalClose()
         return response.data;  // Return the response if needed
       } catch (error) {
         console.error('Error creating payment link:', error);
@@ -349,7 +369,7 @@ const generateCustomerId = async () => {
             'Content-Type': 'application/json'
           }
         });
-        console.log('Payment Link Created:', response.data);
+        alert('Payment Link Send Sucessfully:', response.data);
         return response.data;  // Return the response if needed
       } catch (error) {
         console.error('Error creating payment link:', error);
@@ -530,7 +550,7 @@ const mapProduct = (acModel, item) => {
     // extra_discount: item.extra_discount // Default to 0 if undefined
   };
 };
-const createInvoice = async () => {
+const createPIInvoice = async () => {
   // if (!selectedOrgData) {
   //   throw new Error('Please select an organization.');
   // }
@@ -585,7 +605,7 @@ if (totalCassetteQuantity > 0) {
   
 
   const invoice = {
-    document_type: 'invoice',
+    document_type: 'pro_forma_invoice',
     document_date: currentDate,
     customer: {
       id: CustomerIds,
@@ -622,189 +642,46 @@ if (totalCassetteQuantity > 0) {
     const hashId = response.data.hashId;
 
     const totalAmount = invoice.items.reduce((sum, item) => sum + item.total_amount, 0);
-
-    const paymentData = {
-      amount: totalAmount,
-      payment_mode: 'Cash',
-      customer: CustomerIds,
-      payment_date: currentDate,
-      documents: [
-        {
-          hash_id: hashId,
-          amount_paying: totalAmount,
-        },
-      ],
-    };
-
-    await axios.post(
-      'https://app.getswipe.in/api/partner/v1/payment',
-      paymentData,
+    const pdfResponse = await axios.get(
+      `https://app.getswipe.in/api/partner/v1/doc/pdf/${hashId}`,
       {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `${process.env.REACT_APP_SWIPE_TOKEN}`,
         },
+        responseType: 'arraybuffer'  // This is important for receiving binary data
       }
     );
 
-    const paymentbackenddata = {
-      invoiceid: hashId,
-      date: currentDate,
-      price: totalAmount,
-    };
+    // Convert the PDF to a Blob
+    const pdfBlob = new Blob([pdfResponse.data], { type: 'application/pdf' });
 
-    await axios.put(
-      `${process.env.REACT_APP_BASE_URL}/api/customer/${CustomerIds}`,
-      paymentbackenddata
+    // Create FormData to send the PDF
+    const formData = new FormData();
+    formData.append('pro_forma_invoice', pdfBlob, `invoice_${hashId}.pdf`);
+    formData.append('customername', gstin.name);
+    formData.append('customeremail', gstin.email);
+
+    // Send the PDF to another API
+    const pdfUploadResponse = await axios.post(
+      `http://localhost:8080/api/generatePi/send-invoice`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
     );
-  return response;
+
+    console.log('PDF uploaded successfully:', pdfUploadResponse.data);
+    alert("Pdf is send succesfully to the email")
+    return response;
   } catch (error) {
     console.error('Error creating invoice or processing payment:', error);
     throw error;
   }
 };
 
-//Subscription Plan
-const createSubscription = async () => {
-  if (!gstin.name ) {
-    throw new Error("Missing customer or shipping details.");
-  }
-
-  const currentDate = formatDate(new Date());
-  const nextMonthDate = new Date();
-  const nextMonthDatefor3 = new Date();
-  nextMonthDatefor3.setMonth(nextMonthDate.getMonth() + 2);
-
-  nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
-  
-  const createSubscriptionData = (items, startDate, endDate) => ({
-    document_type: "subscription",
-    document_date: currentDate,
-    customer: {
-      id: CustomerIds,
-      name: gstin.name,
-    },
-    items: items,
-    customer_shipping_address: {
-      address_line1: selectedShippingAddress.line1,
-      address_line2: selectedShippingAddress.line2,
-      pincode: selectedShippingAddress.pincode,
-      city: selectedShippingAddress.city,
-      country: "India",
-      state: selectedShippingAddress.state?.toUpperCase(),
-    },
-    round_off: true,
-    is_subscription: true,
-    subscription_details: {
-      start_time: formatDate(startDate),
-      end_time: formatDate(endDate),
-      repeat: 1,
-      repeat_type: "months",
-    },
-  });
-
-  try {
-    const subscriptions = [];
-
-    // Check if all items have a 5-year plan
-    const allItemsAre5Year = savedItems.every(item => item.plan === "5years");
-
-    if (allItemsAre5Year) {
-      // Create only the 5-year subscription
-      const fiveYearStartDate = new Date(nextMonthDate);
-      const fiveYearEndDate = new Date(fiveYearStartDate);
-      fiveYearEndDate.setFullYear(fiveYearEndDate.getFullYear() + 5);
-
-      const fiveYearSubscriptionItems = savedItems.map(item => mapProduct(item.ton, item));
-      const fiveYearSubscriptionData = createSubscriptionData(fiveYearSubscriptionItems, fiveYearStartDate, fiveYearEndDate);
-
-      const response = await axios.post(
-        `https://app.getswipe.in/api/partner/v1/doc`,
-        fiveYearSubscriptionData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `${process.env.REACT_APP_SWIPE_TOKEN}`,
-          },
-        }
-      );
-      subscriptions.push(response.data);
-      console.log("5-year subscription created:", response.data);
-    } else {
-      // Existing flow for non-5-year plans
-      const subscriptionItems = savedItems.map((item) => mapProduct(item.ton, item));
-
-      // Initial subscription for all items
-      const initialEndDate = new Date(nextMonthDate);
-      initialEndDate.setFullYear(initialEndDate.getFullYear() + parseInt(acDetails.plan));
-      const initialSubscriptionData = createSubscriptionData(subscriptionItems, nextMonthDate, initialEndDate);
-      const response1 = await axios.post(
-        `https://app.getswipe.in/api/partner/v1/doc`,
-        initialSubscriptionData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `${process.env.REACT_APP_SWIPE_TOKEN}`,
-          },
-        }
-      );
-      subscriptions.push(response1.data);
-      console.log("Initial subscription created:", response1.data);
-
-      // Check for 3+2year plan items
-      const threePlusTwoYearItems = savedItems.filter(item => item.plan === "3+2year");
-      if (threePlusTwoYearItems.length > 0) {
-        const modifiedStartTime = new Date(nextMonthDatefor3);
-        modifiedStartTime.setFullYear(modifiedStartTime.getFullYear() + 3);
-        const modifiedEndTime = new Date(nextMonthDate);
-        modifiedEndTime.setFullYear(modifiedEndTime.getFullYear() + 5);
-
-        const modifiedItems = threePlusTwoYearItems.map(item => {
-          const tonValues = {
-            "10": { total_amount: 799, unit_price: 624.28, net_amount: 624.28, price_with_tax: 799, id: "mlmc_2y_10t", name: "Monthly Leasing and Maintenance charges of Air Conditioner - 2Y 10T" },
-            "15": { total_amount: 899, unit_price: 702.34, net_amount: 702.34, price_with_tax: 899, id: "mlmc_2y_15t", name: "Monthly Leasing and Maintenance charges of Air Conditioner - 2Y 15T" },
-            "20": { total_amount: 1099, unit_price: 858.59, net_amount: 858.59, price_with_tax: 1099, id: "mlmc_2y_20t", name: "Monthly Leasing and Maintenance charges of Air Conditioners - 2Y 20T" },
-          };
-
-          if (item.acType === "Cassette") {
-            tonValues["20"] = { total_amount: 1499, unit_price: 1499 / 1.28, net_amount: 1499 / 1.28, price_with_tax: 1499, id: "mlcmc_3y_20t", name: "Monthly Leasing and Maintenance charges of Air Conditioner - 3Y 20T" };
-            tonValues["30"] = { total_amount: 1999, unit_price: 1999 / 1.28, net_amount: 1999 / 1.28, price_with_tax: 1999, id: "mlcmc_3y_30t", name: "Monthly Leasing and Maintenance charges of Air Conditioner (Cassette) - 3Y 30T" };
-          }
-
-          const { total_amount, unit_price, net_amount, price_with_tax, id, name } = tonValues[item.ton];
-          const quantity = item.quantity || 1;
-
-          return {
-            id, name,
-            total_amount: total_amount * quantity,
-            unit_price, net_amount: net_amount * quantity,
-            price_with_tax: price_with_tax * quantity,
-            quantity, item_type: "Service", tax_rate: 28
-          };
-        });
-
-        const modifiedSubscriptionData = createSubscriptionData(modifiedItems, modifiedStartTime, modifiedEndTime);
-        const response2 = await axios.post(
-          `https://app.getswipe.in/api/partner/v1/doc`,
-          modifiedSubscriptionData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `${process.env.REACT_APP_SWIPE_TOKEN}`,
-            },
-          }
-        );
-        subscriptions.push(response2.data);
-        console.log("Second subscription created for 3+2 years plan:", response2.data);
-      }
-    }
-
-    return subscriptions;
-  } catch (error) {
-    console.error("Error creating subscription:", error);
-    throw error;
-  }
-};
 const sumTotalAmounts = (savedItems) => {
   return savedItems.reduce((total, item) => {
     // Ensure totalAmount is a number and add it to the total
@@ -827,6 +704,20 @@ useEffect(() => {
 const handleCustomizePayment=()=>{
   setShowPaymentPopup(true)
 }
+const handleGeneratePI = async ()=>{
+  // backendcustomercreation()
+  // createPIInvoice()
+  const orderResults = await processAllOrders(savedItems);
+  console.log("All orders processed:", orderResults);
+
+
+}
+const handleSiteSurveyChange = (newSiteSurveyData) => {
+  setOrderData(prevData => ({
+      ...prevData,
+      siteSurvey: newSiteSurveyData
+  }));
+};
   return (
     <div className='space-y-6 p-6 bg-secondary min-h-screen justify-start block'>
       <h1 className="text-2xl font-bold">Order Details</h1>
@@ -855,7 +746,7 @@ const handleCustomizePayment=()=>{
         setShippingAddressorder={setShippingAddressorder}
         shippingaddressorder={shippingaddressorder}
       />
-      <SitesSurvery/>
+       <SitesSurvery onSiteSurveyChange={handleSiteSurveyChange} />
       <div className="space-x-4">
       <button 
         onClick={handleFullPaymentModal}
@@ -949,8 +840,9 @@ const handleCustomizePayment=()=>{
           </div>
         </div>
       )}
-        <button className='bg-white text-primary py-2 px-4 border border-primary'  onClick={handleCustomizePayment}>Customize Payment</button>
-        <button className='bg-white text-primary py-2 px-4 border border-primary'>Request Site Visit</button>
+        <button className='bg-white text-primary py-2 px-4 border border-primary'  onClick={handleCustomizePayment}> Customize Payment</button>
+        <button className='bg-white text-primary py-2 px-4 border border-primary' onClick={handleGeneratePI}> Generate PI</button>
+        <button className='bg-white text-primary py-2 px-4 border border-primary' onClick={backendcustomercreation}>Request Site Visit</button>
       </div>
       {showPaymentPopup && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
@@ -962,7 +854,7 @@ const handleCustomizePayment=()=>{
                           onChange={handlePaymentAmountChange}
                           className="border-2 border-gray-300 p-2 rounded mb-4 w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           placeholder="Enter amount"
-                        />
+                          />
                         <div className="flex justify-between gap-4">
                             <button 
                                 className="bg-primary text-white px-4 py-2 rounded"

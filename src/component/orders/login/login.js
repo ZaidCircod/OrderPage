@@ -26,7 +26,7 @@ function Login() {
       const { token } = response.data;
       console.log('Login Successful. Token:', token);
       localStorage.setItem('authToken', token);
-      navigate('/orders');
+      navigate('/home');
     } catch (error) {
       console.error('Login Error:', error);
       setError('Invalid email or password. Please try again.');
